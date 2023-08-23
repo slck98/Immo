@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Panden {
+  id                 Int            @id @default(autoincrement())
+  straat             String         @db.VarChar(45)
+  huisnummer         String         @db.VarChar(45)
+  bus                String?        @db.VarChar(45)
+  postcode           Int
+  gemeente           String         @db.VarChar(45)
+  prijs              Int
+  aantalKamers       Int
+  oppervlakte        Int
+  beschrijving       String
+  type               Type
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime
+  isVerkochtVerhuurd Boolean        @default(false)
+  typePand           TypePand       @relation(fields: [typePandId], references: [id])
+  typePandId         Int
+  afbeeldingen       Afbeeldingen[]
+  pandRegio          PandRegio[]
+}
+
+enum Type {
+  TeKoop
+  TeHuur
+}
+
+model TypePand {
+  id        Int      @id @default(autoincrement())
+  naam      String   @unique @db.VarChar(45)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  Panden    Panden[]
+}
+
+model Afbeeldingen {
+  id        Int      @id @default(autoincrement())
+  url       String   @db.VarChar(150)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  panden    Panden   @relation(fields: [pandenId], references: [id])
+  pandenId  Int
+}
+
+model Regio {
+  id        Int         @id @default(autoincrement())
+  naam      String      @unique @db.VarChar(45)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime
+  pandRegio PandRegio[]
+}
+
+model PandRegio {
+  Panden       Panden?     @relation(fields: [pandenId], references: [id])
+  pandenId     Int
+  Regio        Regio?      @relation(fields: [regioId], references: [id])
+  regioId      Int
+  pandRegiocol String
+  Gebruikers   Gebruikers? @relation(fields: [gebruikersId], references: [id])
+  gebruikersId Int
+  createdAt    DateTime    @default(now())
+
+  @@id([pandenId, regioId])
+}
+
+model Gebruikers {
+  id         Int         @id @default(autoincrement())
+  voorNaam   String      @db.VarChar(45)
+  achterNaam String      @db.VarChar(45)
+  email      String      @unique @db.VarChar(150)
+  wachtwoord String      @db.VarChar(150)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime
+  pandRegio  PandRegio[]
+}
